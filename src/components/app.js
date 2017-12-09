@@ -1,34 +1,127 @@
 import React, { Component } from 'react';
 
+class FitInText extends Component {
+    state = {
+        scale: 1
+    }
+    componentDidUpdate() {
+        const { scale } = this.state
+        const node = this.node
+        const parentNode = node.parentNode
+
+        const parentWidth = parentNode.offsetWidth
+        const scale = offsetWidth / parentWidth
+        if (scale > 1) {
+            this.setState({
+                scale: 1 / scale
+            })
+        } else {
+            this.setState({
+                scale: 1
+            })
+        }
+    }
+    render() {
+        const { scale } = this.state
+        return (
+            <div>
+                {...this.props}
+                style = {{ transform: `scale(${scale}, ${scale})` }}
+                ref = {node => this.node = node}
+            </div>
+        )
+    }
+}
+
 export default class App extends Component {
     constructor(props) {
         super(props);
         this.state = {
+            value: null,
             displayValue: '0',
-            operatorValue: null
+            operatorValue: null,
+            hasOperator: false
         }
     }
+
     renderDisplay(input) {
-        const { displayValue } = this.state
-        this.setState({
-            displayValue: displayValue === '0' ? String(input) : displayValue + input
-        })
-    }
-    inputDecimal() {
-        const { displayValue } = this.state
-        if (displayValue.indexOf('.') === -1) {
+        const { displayValue, hasOperator } = this.state
+        if (hasOperator) {
             this.setState({
-                displayValue: displayValue + '.'
+                displayValue: String(input),
+                hasOperator: false
+            })
+        } else {
+            this.setState({
+                displayValue: displayValue === '0' ? String(input) : displayValue + input
+            })
+        }
+
+    }
+
+    inputDecimal() {
+        const { displayValue, hasOperator } = this.state
+        if (hasOperator) {
+            this.setState({
+                displayValue: '.',
+                hasOperator: false
+            })
+        } else if (displayValue.indexOf('.') === -1) {
+            this.setState({
+                displayValue: displayValue + '.',
+                hasOperator: false
             })
         }
     }
+
     clearDisplay() {
-        const { displayValue } = this.state
         this.setState({ displayValue: "0" })
     }
-    inputOperator(operator) {
-        const { operatorValue } = this.state
+
+    negative_postive() {
+        const { displayValue } = this.state
         this.setState({
+            displayValue: displayValue.indexOf('-') === -1 ? '-' + displayValue : displayValue.substr(1)
+        })
+    }
+
+    percent() {
+        const { displayValue } = this.state
+        const value = parseFloat(displayValue)
+        this.setState({
+            displayValue: String(value / 100) // String() is add so numbers will add on istead of incrament count
+        })
+    }
+
+    inputOperator(operator) {
+        const { displayValue, operatorValue, value, hasOperator } = this.state
+        const prevValue = value
+        const nextValue = parseFloat(displayValue)
+
+        const operations = {
+            'x': (prevValue, nextValue) => prevValue * nextValue,
+            '/': (prevValue, nextValue) => prevValue / nextValue,
+            '+': (prevValue, nextValue) => prevValue + nextValue,
+            '-': (prevValue, nextValue) => prevValue - nextValue,
+            '=': (prevValue, nextValue) => nextValue
+        }
+
+        if (value == null) {
+            this.setState({
+                value: nextValue
+            })
+        } else if (operatorValue) {
+            const currentValue = value || 0;
+            const computedValue = operations[operatorValue](currentValue, nextValue);
+
+            this.setState({
+                value: computedValue,
+                displayValue: String(computedValue)
+            })
+        }
+
+        this.setState({
+            hasOperator: true,
             operatorValue: operator
         })
     }
@@ -36,10 +129,10 @@ export default class App extends Component {
         return (
             <div className="phone">
                 <div className="text-center" id="calculator">
-                    <div className="output">{this.state.displayValue}</div>
+                    <FitInText className="output">{this.state.displayValue}</FitInText>
                     <div className="grey btn" id="clear" onClick={() => this.clearDisplay()}>AC</div>
-                    <div className="grey btn" id="clearOne">+/-</div>
-                    <div className="grey btn" id="b%">%</div>
+                    <div className="grey btn" id="clearOne" onClick={() => this.negative_postive()}>+/-</div>
+                    <div className="grey btn" id="b%" onClick={() => this.percent()}>%</div>
                     <div className="operator orange btn" id="b/" onClick={() => this.inputOperator('/')}>÷</div>
                     <div className="number white btn" onClick={() => this.renderDisplay(7)}>7</div>
                     <div className="number white btn" onClick={() => this.renderDisplay(8)}>8</div>
@@ -55,7 +148,7 @@ export default class App extends Component {
                     <div className="operator orange btn" onClick={() => this.inputOperator('+')}>+</div>
                     <div className="number white btn" id="double" onClick={() => this.renderDisplay(0)}>0</div>
                     <div className="number white btn" onClick={() => this.inputDecimal()}>.</div>
-                    <div className="orange btn equal">=</div>
+                    <div className="orange btn equal" onClick={() => this.inputOperator('=')}>=</div>
                 </div>
                 <div className="circle text-center"></div>
             </div>
