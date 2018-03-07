@@ -5,30 +5,40 @@ class FitInText extends Component {
         scale: 1
     }
     componentDidUpdate() {
-        const { scale } = this.state
-        const node = this.node
-        const parentNode = node.parentNode
 
-        const parentWidth = parentNode.offsetWidth
-        const scale = offsetWidth / parentWidth
-        if (scale > 1) {
-            this.setState({
-                scale: 1 / scale
-            })
-        } else {
-            this.setState({
-                scale: 1
-            })
+        const { scale } = this.state;
+
+        const node = this.node;
+        const parentNode = node.parentNode;
+
+        const availableWidth = parentNode.offsetWidth;
+        const actualWidth = node.offsetWidth;
+        const actualScale = availableWidth / actualWidth;
+        console.log('scale: ', scale);
+        console.log('node: ', node);
+        console.log('parentNode: ', parentNode);
+        console.log('availabeWidth: ', availableWidth);
+        console.log('actialWidth: ', actualWidth);
+        console.log('actualScale: ', actualScale);
+        if (scale === actualScale) {
+            return
+        }
+        if (actualScale < 1) {
+            this.setState({ scale: actualScale })
+        } else if (scale < 1) {
+            this.setState({ scale: 1 })
         }
     }
+
     render() {
-        const { scale } = this.state
+        const { scale } = this.state;
+        console.log(this.props)
         return (
-            <div>
-                {...this.props}
-                style = {{ transform: `scale(${scale}, ${scale})` }}
-                ref = {node => this.node = node}
-            </div>
+            <div
+                className="auto-scaling-text"
+                style={{ transform: `scale(${scale}, ${scale})` }}
+                ref={node => this.node = node}
+            >{this.props.value}</div>
         )
     }
 }
@@ -76,6 +86,7 @@ export default class App extends Component {
 
     clearDisplay() {
         this.setState({ displayValue: "0" })
+        this.setState({ value: null })
     }
 
     negative_postive() {
@@ -126,32 +137,33 @@ export default class App extends Component {
         })
     }
     render() {
+        const { displayValue } = this.state
         return (
-            <div className="phone">
-                <div className="text-center" id="calculator">
-                    <FitInText className="output">{this.state.displayValue}</FitInText>
-                    <div className="grey btn" id="clear" onClick={() => this.clearDisplay()}>AC</div>
-                    <div className="grey btn" id="clearOne" onClick={() => this.negative_postive()}>+/-</div>
-                    <div className="grey btn" id="b%" onClick={() => this.percent()}>%</div>
-                    <div className="operator orange btn" id="b/" onClick={() => this.inputOperator('/')}>÷</div>
-                    <div className="number white btn" onClick={() => this.renderDisplay(7)}>7</div>
-                    <div className="number white btn" onClick={() => this.renderDisplay(8)}>8</div>
-                    <div className="number white btn" onClick={() => this.renderDisplay(9)}>9</div>
-                    <div className="operator orange btn" onClick={() => this.inputOperator('x')}>x</div>
-                    <div className="number white btn" onClick={() => this.renderDisplay(4)}>4</div>
-                    <div className="number white btn" onClick={() => this.renderDisplay(5)}>5</div>
-                    <div className="number white btn" onClick={() => this.renderDisplay(6)}>6</div>
-                    <div className="operator orange btn" onClick={() => this.inputOperator('-')}>-</div>
-                    <div className="number white btn" onClick={() => this.renderDisplay(1)}>1</div>
-                    <div className="number white btn" onClick={() => this.renderDisplay(2)}>2</div>
-                    <div className="number white btn" onClick={() => this.renderDisplay(3)}>3</div>
-                    <div className="operator orange btn" onClick={() => this.inputOperator('+')}>+</div>
-                    <div className="number white btn" id="double" onClick={() => this.renderDisplay(0)}>0</div>
-                    <div className="number white btn" onClick={() => this.inputDecimal()}>.</div>
-                    <div className="orange btn equal" onClick={() => this.inputOperator('=')}>=</div>
+            < div className="calculator" >
+                <FitInText className="output" value={displayValue} />
+                <div className="calculator-keypad">
+                    <div className="grey" id="clear" onClick={() => this.clearDisplay()}>AC</div>
+                    <div className="grey" id="clearOne" onClick={() => this.negative_postive()}>+/-</div>
+                    <div className="grey" id="percent" onClick={() => this.percent()}>%</div>
+                    <div className="key-divide" id="b/" onClick={() => this.inputOperator('/')}>÷</div>
+                    <div className="key-7" onClick={() => this.renderDisplay(7)}>7</div>
+                    <div className="key-8" onClick={() => this.renderDisplay(8)}>8</div>
+                    <div className="key-9" onClick={() => this.renderDisplay(9)}>9</div>
+                    <div className="key-multiply" onClick={() => this.inputOperator('x')}>x</div>
+                    <div className="key-4" onClick={() => this.renderDisplay(4)}>4</div>
+                    <div className="key-5" onClick={() => this.renderDisplay(5)}>5</div>
+                    <div className="key-6" onClick={() => this.renderDisplay(6)}>6</div>
+                    <div className="key-subtract" onClick={() => this.inputOperator('-')}>-</div>
+                    <div className="key-1" onClick={() => this.renderDisplay(1)}>1</div>
+                    <div className="key-2" onClick={() => this.renderDisplay(2)}>2</div>
+                    <div className="key-3" onClick={() => this.renderDisplay(3)}>3</div>
+                    <div className="key-add" onClick={() => this.inputOperator('+')}>+</div>
+                    <div className="key-0" id="double" onClick={() => this.renderDisplay(0)}>0</div>
+                    <div className="key-dot" onClick={() => this.inputDecimal()}>.</div>
+                    <div className="key-equals" onClick={() => this.inputOperator('=')}>=</div>
                 </div>
-                <div className="circle text-center"></div>
-            </div>
+            </div >
+
         );
     }
 }
